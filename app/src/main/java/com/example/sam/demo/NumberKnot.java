@@ -19,6 +19,7 @@ public class NumberKnot {
     private int countResult = 0;
     private int blankIndex = -1;
     private int index = 0;
+    private boolean isFindOneResult = false;
     private ArrayList<Integer> numsOfBoardNotHasRepeatNums = new ArrayList<>();
     private ArrayList<Integer> path = new ArrayList<>();
     private HashSet<Point> setFilledPreNums = new HashSet<>();
@@ -52,10 +53,6 @@ public class NumberKnot {
     }
 
     public boolean checkPath(int i1,int j1, int k1){
-//        if (check(i1, j1, k1, true)) {
-//            return true;
-//        }
-
         path.clear();
         boolean isOk = false;
         //一条线走完
@@ -145,8 +142,9 @@ public class NumberKnot {
                 System.out.println("获取正确解,countResult:" + countResult);
                 //打印
                 printArray();
-            } else{
 
+                //找到一个答案就退出程序
+                isFindOneResult = true;
             }
             return;
         }
@@ -173,6 +171,8 @@ public class NumberKnot {
                     //初始化该空格
                     matrix[i][j] = new Point(i,j,0);
                     blankIndex--;
+                    if(isFindOneResult)
+                        return;
                 }
             }
         } else {
@@ -322,71 +322,6 @@ public class NumberKnot {
         return true;
     }
 
-    private boolean checkNextValueRound(int row,int col, int next){
-        boolean isLinkUp = false;
-        boolean isLinkUpLeft = false;
-        boolean isLinkUpRight = false;
-        boolean isLinkMidLeft = false;
-        boolean isLinkMidRight = false;
-        boolean isLinkDown = false;
-        boolean isLinkDownLeft = false;
-        boolean isLinkDownRight = false;
-
-        //上
-        if(row>0){
-            if(matrix[row-1][col].getValue() == next || matrix[row-1][col].getValue() == 0){
-                isLinkUp = true;
-            }
-        }
-        //左上
-        if(row>0 && col>0){
-            if(matrix[row-1][col-1].getValue() == next || matrix[row-1][col-1].getValue() == 0){
-                isLinkUpLeft = true;
-            }
-        }
-        //右上
-        if(row>0 && col+1<N){
-            if(matrix[row-1][col+1].getValue() == next || matrix[row-1][col+1].getValue() == 0){
-                isLinkUpRight = true;
-            }
-        }
-        //下
-        if(row+1<M){
-            if(matrix[row+1][col].getValue() == next || matrix[row+1][col].getValue() == 0){
-                isLinkDown = true;
-            }
-        }
-        //左下
-        if(row+1<M && col>0){
-            if(matrix[row+1][col-1].getValue() == next || matrix[row+1][col-1].getValue() == 0){
-                isLinkDownLeft = true;
-            }
-        }
-        //右下
-        if(row+1<M && col+1<N){
-            if(matrix[row+1][col+1].getValue() == next || matrix[row+1][col+1].getValue() == 0){
-                isLinkDownRight = true;
-            }
-        }
-        //左
-        if(col>0){
-            if(matrix[row][col-1].getValue() == next || matrix[row][col-1].getValue() == 0){
-                isLinkMidLeft = true;
-            }
-        }
-        //右
-        if(col+1<N){
-            if(matrix[row][col+1].getValue() == next || matrix[row][col+1].getValue() == 0){
-                isLinkMidRight = true;
-            }
-        }
-
-        boolean isLinkOfRound = false;
-        isLinkOfRound = isLinkUp || isLinkUpLeft||isLinkUpRight||isLinkMidLeft||isLinkMidRight||isLinkDown||isLinkDownLeft||isLinkDownRight;
-
-        return isLinkOfRound;
-    }
-
     private boolean checkRound(int row, int col, int number){
         //判断上下左右是否相连
         if(number==MaxValue){
@@ -496,16 +431,7 @@ public class NumberKnot {
                 isMinOk= true;
             }
         }
-        //System.out.print(""+isLetterUp + isLetterUpLeft+isLetterUpRight+isLetterMidLeft+isLetterMidRight+isLetterDown+isLetterDownLeft+isLetterDownRight);
-//        isMinOk = true;
         return isLinkOfRound && !isMinOk;
-    }
-
-    private boolean checkIfLinkForTwoPoint(int num1,int num2){
-        if(Math.abs(num1-num2) <= 1){
-            return true;
-        }
-        return false;
     }
 
     private boolean checkRoundForPres(int row, int col, int number){
@@ -613,8 +539,6 @@ public class NumberKnot {
                 isMinOk= true;
             }
         }
-        //System.out.print(""+isLetterUp + isLetterUpLeft+isLetterUpRight+isLetterMidLeft+isLetterMidRight+isLetterDown+isLetterDownLeft+isLetterDownRight);
-//        isMinOk = true;
         return isLinkOfRound && !isMinOk;
     }
 
