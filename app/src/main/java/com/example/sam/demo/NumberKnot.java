@@ -10,16 +10,19 @@ import java.util.HashSet;
  */
 
 public class NumberKnot {
-    private boolean logSwitch = true;
+    private boolean logSwitch = false;
     private Point[][] matrix = null;
     private int M;
     private int N;
+    private int MaxValue;
+    private int MinValue;
     private int countResult = 0;
     private int blankIndex = -1;
     private int index = 0;
     private ArrayList<Integer> numsOfBoardNotHasRepeatNums = new ArrayList<>();
     private ArrayList<Integer> path = new ArrayList<>();
-    private HashSet<Point> setFilled = new HashSet<>();
+    private HashSet<Point> setFilledPreNums = new HashSet<>();
+    private HashSet<Point> setDefaultNums = new HashSet<>();
 
     public NumberKnot(int[][] _matrix) {
         System.out.println("初始化");
@@ -27,12 +30,15 @@ public class NumberKnot {
         for (int i = 0; i < _matrix.length; i++) {
             for (int j = 0; j < _matrix[0].length; j++) {
                 matrix[i][j] = new Point(i,j,_matrix[i][j]);
-                //System.out.println(matrix[i][j]);
+                if(_matrix[i][j]!=0){
+                    setDefaultNums.add(matrix[i][j]);
+                }
             }
         }
         M = _matrix.length;
         N = _matrix[0].length;
-
+        MaxValue = M*N;
+        MinValue = 1;
         for(int i=1;i<=M*N;i++){
             numsOfBoardNotHasRepeatNums.add(i);
         }
@@ -185,23 +191,23 @@ public class NumberKnot {
     }
 
     private boolean checkPreSeqNumsIfCanLink(int row, int col, int number){
-        setFilled.clear();
+        setFilledPreNums.clear();
         boolean isCanLinkPreSeqNums = true;
         //获取填过的数字
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < N; j++) {
-                setFilled.add(new Point(i,j,matrix[i][j].getValue()));
+                setFilledPreNums.add(new Point(i,j,matrix[i][j].getValue()));
             }
         }
         for(int i=0;i<col;i++){
-            setFilled.add(new Point(row,i,matrix[row][i].getValue()));
+            setFilledPreNums.add(new Point(row,i,matrix[row][i].getValue()));
         }
-        setFilled.add(new Point(row,col,number));
+        setFilledPreNums.add(new Point(row,col,number));
         //检查顺序的两个数字是否可以link
         int ii = 1;
-        for (Point t:setFilled){
+        for (Point t: setFilledPreNums){
             ii++;
-            for (Point tNext:setFilled){
+            for (Point tNext: setFilledPreNums){
                 ii--;
                 if(t.getValue()+1==tNext.getValue()){
                     if(Math.abs(t.getRow()-tNext.getRow())>1||Math.abs(t.getCol()-tNext.getCol())>1){
@@ -211,8 +217,8 @@ public class NumberKnot {
                 }
             }
         }
-        if(setFilled.size()>0){
-            if(ii==setFilled.size()){
+        if(setFilledPreNums.size()>0){
+            if(ii== setFilledPreNums.size()){
                 isCanLinkPreSeqNums = true;
             }
         }else{
@@ -220,6 +226,8 @@ public class NumberKnot {
         }
         return  isCanLinkPreSeqNums;
     }
+
+
 
     /**
      * 判断给某行某列赋值是否符合规则
@@ -230,20 +238,29 @@ public class NumberKnot {
      * @return
      */
     private boolean check(int row, int col, int number, boolean flag) {
-        if(index==10){
-            int a=0;
+        if(true){
+            if(matrix[3][1].getValue()==2&&matrix[3][0].getValue()==1){
+                int a=0;
+            }
         }
         //判断该数组是否有重复数字 TODO 用集合优化
         if(!flag){
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < N; j++) {
+                    if(row==i&&col==j){
+                        continue;
+                    }
                     if (matrix[i][j].getValue() == number) {
                         return false;
                     }
                 }
             }
         }
-        int a=1;
+        //检查number与default点是否顺序相邻
+        boolean isSeqByDefaultNums = checkDefaultNumsIfSeq(row,col,number);
+        if(!isSeqByDefaultNums){
+            return false;
+        }
         //检查前面的顺序数字是否可以连
         boolean isCanLinkPreSeqNums = checkPreSeqNumsIfCanLink(row,col,number);
 //        boolean isCanLinkPreSeqNums = true;
@@ -274,6 +291,35 @@ public class NumberKnot {
         String str = blanks+"check cur,"+isOkCurNum+" row:"+row+",col:"+col+",number:"+number+",    check pre nums,"+isOkPreNums+",index:"+index;
         log(str);
         return isOkPreNums;
+    }
+
+    private boolean checkDefaultNumsIfSeq(int row, int col, int number) {
+        for (Point point:setDefaultNums){
+            int curValue = point.getValue();
+            int preValue = 0;
+            int nextValue = 0;
+            if(curValue>1){
+                preValue = curValue-1;
+            }
+            if(curValue<MaxValue){
+                nextValue = curValue+1;
+            }
+            if(preValue!=0){
+                if(number == preValue){
+                    if(Math.abs(row-point.getRow())>1||Math.abs(col-point.getCol())>1){
+                        return false;
+                    }
+                }
+            }
+            if(nextValue!=0){
+                if(number == nextValue){
+                    if(Math.abs(row-point.getRow())>1||Math.abs(col-point.getCol())>1){
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     private boolean checkNextValueRound(int row,int col, int next){
@@ -343,6 +389,9 @@ public class NumberKnot {
 
     private boolean checkRound(int row, int col, int number){
         //判断上下左右是否相连
+        if(number==MaxValue){
+            return true;
+        }
         int next = number+1;
 
         boolean isLinkOfRound = false;
@@ -450,6 +499,13 @@ public class NumberKnot {
         //System.out.print(""+isLetterUp + isLetterUpLeft+isLetterUpRight+isLetterMidLeft+isLetterMidRight+isLetterDown+isLetterDownLeft+isLetterDownRight);
 //        isMinOk = true;
         return isLinkOfRound && !isMinOk;
+    }
+
+    private boolean checkIfLinkForTwoPoint(int num1,int num2){
+        if(Math.abs(num1-num2) <= 1){
+            return true;
+        }
+        return false;
     }
 
     private boolean checkRoundForPres(int row, int col, int number){

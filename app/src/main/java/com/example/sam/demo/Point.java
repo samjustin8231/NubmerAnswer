@@ -5,12 +5,12 @@ package com.example.sam.demo;
  */
 
 public class Point {
-    private int col;// 行号
-    private int row;// 列号
+    private int col;
+    private int row;
     private int value;
 
     // 构造点
-    public Point(int col, int row, int value) {
+    public Point(int row, int col, int value) {
         super();
         this.col = col;
         this.row = row;

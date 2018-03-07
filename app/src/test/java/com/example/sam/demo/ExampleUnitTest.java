@@ -60,7 +60,7 @@ public class ExampleUnitTest {
                 {0, 0, 0, 16},
         };
 
-        NumberKnot s = new NumberKnot(sudoku4_4_a);
+        NumberKnot s = new NumberKnot(sudoku4_5_a);
         s.backTrace(0, 0);
     }
 
