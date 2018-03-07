@@ -8,6 +8,8 @@ public class Point {
     private int col;
     private int row;
     private int value;
+    private int linesCount;
+    private boolean isSroundByOthers;
 
     // 构造点
     public Point(int row, int col, int value) {

@@ -10,7 +10,7 @@ import java.util.HashSet;
  */
 
 public class NumberKnot {
-    private boolean logSwitch = false;
+    private boolean logSwitch = true;
     private Point[][] matrix = null;
     private int M;
     private int N;
@@ -52,6 +52,13 @@ public class NumberKnot {
         }
     }
 
+    /**
+     * todo 该方法有待优化
+     * @param i1
+     * @param j1
+     * @param k1
+     * @return
+     */
     public boolean checkPath(int i1,int j1, int k1){
         path.clear();
         boolean isOk = false;
@@ -100,9 +107,6 @@ public class NumberKnot {
             boolean isExitNextValue = false;
             if(Math.abs(nextX-x)<=1&&Math.abs(nextY-y)<=1){
                 isExitNextValue = true;
-            }
-            if(k==8){
-                int a = 0;
             }
             //下一个值存在
             if (isExitNextValue) {
@@ -238,16 +242,11 @@ public class NumberKnot {
      * @return
      */
     private boolean check(int row, int col, int number, boolean flag) {
-        if(true){
-            if(matrix[3][1].getValue()==2&&matrix[3][0].getValue()==1){
-                int a=0;
-            }
-        }
         //判断该数组是否有重复数字 TODO 用集合优化
         if(!flag){
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < N; j++) {
-                    if(row==i&&col==j){
+                    if(row==i&&col==j){ //对于当前正在填的数字没必要判断
                         continue;
                     }
                     if (matrix[i][j].getValue() == number) {
@@ -256,14 +255,17 @@ public class NumberKnot {
                 }
             }
         }
-        //检查number与default点是否顺序相邻
+        //检查number如果是default点前后的数字，那么是否相邻
         boolean isSeqByDefaultNums = checkDefaultNumsIfSeq(row,col,number);
         if(!isSeqByDefaultNums){
             return false;
         }
-        //检查前面的顺序数字是否可以连
+
+        //合并b(1),b(2) 检查前面的数字是否都有两条线，除了最小值和最大值
+        boolean isTwoLinesPreNums = checkPreNumsHasTwoLines(row,col,number);
+
+        //3.b(1) 检查前面的顺序数字是否可以连
         boolean isCanLinkPreSeqNums = checkPreSeqNumsIfCanLink(row,col,number);
-//        boolean isCanLinkPreSeqNums = true;
         if(!isCanLinkPreSeqNums){
             return false;
         }
@@ -273,7 +275,7 @@ public class NumberKnot {
             return false;
         }
 
-        //检查前面所有的数，只要有一个数的四周都不满足，则返回false
+        //3.b(2)检查前面所有的数，只要有一个数的四周都不满足，则返回false
         boolean isOkPreNums = true;
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < N; j++) {
@@ -291,6 +293,18 @@ public class NumberKnot {
         String str = blanks+"check cur,"+isOkCurNum+" row:"+row+",col:"+col+",number:"+number+",    check pre nums,"+isOkPreNums+",index:"+index;
         log(str);
         return isOkPreNums;
+    }
+
+    /**
+     * todo
+     * @param row
+     * @param col
+     * @param number
+     * @return
+     */
+    private boolean checkPreNumsHasTwoLines(int row, int col, int number) {
+
+        return true;
     }
 
     private boolean checkDefaultNumsIfSeq(int row, int col, int number) {
@@ -529,16 +543,131 @@ public class NumberKnot {
             }
         }
 
-        boolean isMinOk = false;
-        isMinOfRound = isLetterUp && isLetterUpLeft&&isLetterUpRight&&isLetterMidLeft&&isLetterMidRight&&isLetterDown&&isLetterDownLeft&&isLetterDownRight;
-        isLinkOfRound = isLinkUp || isLinkUpLeft||isLinkUpRight||isLinkMidLeft||isLinkMidRight||isLinkDown||isLinkDownLeft||isLinkDownRight;
-        if(isMinOfRound){
-            if(number==1){
-                isMinOk = false;
-            }else{
-                isMinOk= true;
+        //如果四周被包了，除了最值，其他的必须有两条line
+        boolean isSroundByOthers = true;
+        //上
+        if(row>0){
+            if(matrix[row-1][col].getValue() == 0){
+                isSroundByOthers = false;
             }
         }
+        //左上
+        if(row>0 && col>0){
+            if(matrix[row-1][col-1].getValue() == 0){
+                isSroundByOthers = false;
+            }
+        }
+        //右上
+        if(row>0 && col+1<N){
+            if(matrix[row-1][col+1].getValue() == 0){
+                isSroundByOthers = false;
+            }
+        }
+        //下
+        if(row+1<M){
+            if(matrix[row+1][col].getValue() == 0){
+                isSroundByOthers = false;
+            }
+        }
+        //左下
+        if(row+1<M && col>0){
+            if(matrix[row+1][col-1].getValue() == 0){
+                isSroundByOthers = false;
+            }
+        }
+        //右下
+        if(row+1<M && col+1<N){
+            if(matrix[row+1][col+1].getValue() == 0){
+                isSroundByOthers = false;
+            }
+        }
+        //左
+        if(col>0){
+            if(matrix[row][col-1].getValue() == 0){
+                isSroundByOthers = false;
+            }
+        }
+        //右
+        if(col+1<N){
+            if(matrix[row][col+1].getValue() == 0){
+                isSroundByOthers = false;
+            }
+        }
+        if(isSroundByOthers){//必须两条线相连，除了最值
+            int lines = 0;
+            //上
+            if(row>0){
+                if(Math.abs(matrix[row-1][col].getValue() - number) == 1){
+                    lines++;
+                }
+            }
+            //左上
+            if(row>0 && col>0){
+                if(Math.abs(matrix[row-1][col-1].getValue()-number)==1){
+                    lines++;
+                }
+            }
+            //右上
+            if(row>0 && col+1<N){
+                if(Math.abs(matrix[row-1][col+1].getValue()-number)==1){
+                    lines++;
+                }
+            }
+            //下
+            if(row+1<M){
+                if(Math.abs(matrix[row+1][col].getValue()-number)==1){
+                    lines++;
+                }
+            }
+            //左下
+            if(row+1<M && col>0){
+                if(Math.abs(matrix[row+1][col-1].getValue()-number)==1){
+                    lines++;
+                }
+            }
+            //右下
+            if(row+1<M && col+1<N){
+                if(Math.abs(matrix[row+1][col+1].getValue()-number)==1){
+                    lines++;
+                }
+            }
+            //左
+            if(col>0){
+                if(Math.abs(matrix[row][col-1].getValue()-number)==1){
+                    lines++;
+                }
+            }
+            //右
+            if(col+1<N){
+                if(Math.abs(matrix[row][col+1].getValue()-number)==1){
+                    lines++;
+                }
+            }
+//            log(getBlanks()+"  row:"+row+",col:"+col+",number:"+number+",  isLinkOfRound:"+isLinkOfRound+",  isSroundByOthers:"+isSroundByOthers+",  lines:"+lines);
+            if(number!=MinValue && number!=MaxValue){//非最值
+                if(lines==2){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{  //最值
+                isLinkOfRound = isLinkUp || isLinkUpLeft||isLinkUpRight||isLinkMidLeft||isLinkMidRight||isLinkDown||isLinkDownLeft||isLinkDownRight;
+            }
+        }else{
+            isLinkOfRound = isLinkUp || isLinkUpLeft||isLinkUpRight||isLinkMidLeft||isLinkMidRight||isLinkDown||isLinkDownLeft||isLinkDownRight;
+//            log(getBlanks()+"  row:"+row+",col:"+col+",number:"+number+",  isLinkOfRound:"+isLinkOfRound+",  isSroundByOthers:"+isSroundByOthers);
+        }
+
+        boolean isMinOk = false;
+        //isMinOfRound = isLetterUp && isLetterUpLeft&&isLetterUpRight&&isLetterMidLeft&&isLetterMidRight&&isLetterDown&&isLetterDownLeft&&isLetterDownRight;
+
+//        if(isMinOfRound){
+//            if(number==1){
+//                isMinOk = false;
+//            }else{
+//                isMinOk= true;
+//            }
+//        }
         return isLinkOfRound && !isMinOk;
     }
 
